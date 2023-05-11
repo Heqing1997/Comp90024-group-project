@@ -2,22 +2,21 @@ import ijson
 import json
 
 marital_data = []
+count = 0
+keywords = ["marriage", "wedding", "spouse", "bride", "groom", "marital","marry"]
 
 with open('twitter-huge.json', 'r', encoding='utf-8') as f:
-    count=0
     parser = ijson.parse(f)
     for prefix, event, value in parser:
-        if prefix.endswith('.tokens'):
+        if prefix.endswith('.tokens') and event == 'string':
             tokens = value
-            marital_tokens = [token for token in tokens.split('|') if 'marriage' in token or 'wedding' in token or 'bride' in token or 'groom' in token or 'marital' in token or 'marry' in token or "spouse" in token]
-            if marital_tokens:
+            if any(keyword in value.lower() for keyword in keywords):
                 marital_data.append(value)
-                count+=1
-    print("total count:",count)
+                count += 1
 
-# 将数据转换成 JSON 字符串
+    print("total count:", count)
+
 json_data = json.dumps(marital_data, indent=2)
 
-# 将 JSON 字符串写入文件
-with open("marital_data.json", "w") as f:
+with open("marriage_twitters.json", "w") as f:
     f.write(json_data)
