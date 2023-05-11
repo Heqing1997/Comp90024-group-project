@@ -1,9 +1,10 @@
 from flask import Flask, Response
+from flask_cors import CORS
 import couchdb
 import json
 
-
 app = Flask(__name__)
+CORS(app)
 
 admin = 'admin'
 password = 'password'
@@ -31,16 +32,20 @@ except couchdb.http.ServerError as e:
     print(f"An error occurred while connecting to CouchDB: {e}")
 
 
-@app.route('/adelaide/male-registered-marriage/<sa2_code>')
+@app.route('/adelaide/<sa2_code>')
+@app.route('/adelaide/<sa2_code>')
 def show_data(sa2_code):
-    results = []
-
     for doc_id in databases["sudo_adelaide_city"]:
         doc = databases["sudo_adelaide_city"].get(doc_id)
-        if doc['sa2_code_2021'] == sa2_code:  # 匹配sa2_code
-            male_data = {key: value for key, value in doc.items() if key.startswith('m_') and 'marrd_reg_marrge' in key and not key.startswith('m_tot_')}
-            sorted_male_data = dict(sorted(male_data.items(), key=lambda x: x[0]))
-            results.append(sorted_male_data)
+        if doc['sa2_code_2021'] == sa2_code:
+            male_data = {key: value for key, value in doc.items() if
+                         key.startswith('m_') and 'marrd_reg_marrge' in key and not key.startswith('m_tot_')}
+            female_data = {key: value for key, value in doc.items() if
+                           key.startswith('f_') and 'marrd_reg_marrge' in key and not key.startswith('f_tot_')}
+            results = {
+                "male": dict(sorted(male_data.items(), key=lambda x: x[0])),
+                "female": dict(sorted(female_data.items(), key=lambda x: x[0]))
+            }
             break
     else:
         return Response(json.dumps({"error": "SA2 code not found"}), mimetype='application/json'), 404
