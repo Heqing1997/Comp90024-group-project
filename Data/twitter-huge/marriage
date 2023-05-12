@@ -1,20 +1,39 @@
-import ijson
+#### extract tweets about marriage
 import json
+import ijson
+import nltk
+from nltk.corpus import wordnet
+
+def get_synonyms(words):
+    synonyms = []
+    for word in words:
+        for syn in wordnet.synsets(word):
+            for lemma in syn.lemmas():
+                synonyms.append(lemma.name())
+    return synonyms
+
+keywords = ["married", "de facto", "divorced", "separated", "widowed", "never married"]
+synonyms = get_synonyms(keywords)
+print(synonyms)
+
 
 marital_data = []
 count = 0
-keywords = ["marriage", "wedding", "spouse", "bride", "groom", "marital","marry"]
 
-with open('twitter-huge.json', 'r', encoding='utf-8') as f:
+file_path = "E:\\Desktop\\data\\twitter-huge.json\\mnt\\ext100\\twitter-huge.json"
+
+with open(file_path, 'r', encoding='utf-8') as f:
     parser = ijson.parse(f)
     for prefix, event, value in parser:
         if prefix.endswith('.tokens') and event == 'string':
             tokens = value
-            if any(keyword in value.lower() for keyword in keywords):
-                marital_data.append(value)
+            if any(synonym in value.lower() for synonym in synonyms):
+                sentence = value.replace('|', ' ')
+                marital_data.append(sentence)
                 count += 1
+                print(sentence)
 
-    print("total count:", count)
+print("total count:", count)
 
 json_data = json.dumps(marital_data, indent=2)
 
