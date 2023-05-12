@@ -1,0 +1,28 @@
+import couchdb
+import json
+
+# authentication
+admin = 'admin'
+password = 'password'
+url = f'http://{admin}:{password}@172.26.135.144:5984/'
+
+# get couchdb instance
+couch = couchdb.Server(url)
+
+# indicate the db name
+db_name = 'marriage_twitters'
+
+# if not exist, create one
+if db_name not in couch:
+    db = couch.create(db_name)
+else:
+    db = couch[db_name]
+
+# read data from local file using ijson
+with open('marriage_twitters.json') as f:
+    data = json.load(f)
+    marriage_twitters = data
+
+# 将列表中的每个元素插入数据库
+for twit in marriage_twitters:
+    db.save({'text': twit})
