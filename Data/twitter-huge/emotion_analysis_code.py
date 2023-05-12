@@ -1,19 +1,32 @@
+#### emotion analysis -- pos/neg/neu
 import ijson
 import nltk
 import json
+from nltk.corpus import wordnet
 from nltk.sentiment import SentimentIntensityAnalyzer
 
 nltk.download('vader_lexicon')
 
-keywords = ["marriage", "wedding", "spouse", "bride", "groom", "marital","marry"]
-file_path = "F:/桌面/twitter-huge.json"
+def get_synonyms(words):
+    synonyms = []
+    for word in words:
+        for syn in wordnet.synsets(word):
+            for lemma in syn.lemmas():
+                synonyms.append(lemma.name())
+    return synonyms
+
+keywords = ["married", "de facto", "divorced", "separated", "widowed", "never married"]
+synonyms = get_synonyms(keywords)
+print(synonyms)
+
+file_path = "E:\\Desktop\\data\\twitter-huge.json\\mnt\\ext100\\twitter-huge.json"
 
 # 初始化情感分析器
 sia = SentimentIntensityAnalyzer()
 
-positive_count = 0.0
-negative_count = 0.0
-neutral_count = 0.0
+positive_count = 0
+negative_count = 0
+neutral_count = 0
 
 results = []
 
@@ -22,7 +35,7 @@ with open(file_path, 'r', encoding='utf-8') as file:
 
     for prefix, event, value in parser:
         if prefix.endswith('.tokens') and event == 'string':
-            if any(keyword in value.lower() for keyword in keywords):
+            if any(synonym in value.lower() for synonym in synonyms):
                 sentence = value.replace('|', ' ')
                 sentiment_score = sia.polarity_scores(sentence)
 
@@ -38,10 +51,12 @@ with open(file_path, 'r', encoding='utf-8') as file:
                     neutral_count += 1
 
                 tweet_data = {
-                    "Tweet": value,
+                    "Tweet": value.replace('|', ' '),
                     "Sentiment Score": sentiment_score,
                     "Sentiment Category": sentiment_category
                 }
+
+                print(tweet_data)
 
                 results.append(tweet_data)
 
@@ -53,6 +68,7 @@ results.append({
 })
 
 json_data = json.dumps(results, indent=4)
+
 # 将结果保存为JSON文件
 output_file = "emotion_analysis.json"
 with open(output_file, 'w') as f:
