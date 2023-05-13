@@ -15,10 +15,10 @@ try:
     couch = couchdb.Server(url)
     print("Connected to CouchDB server successfully.")
     db_names = ["sudo_adelaide_city",
-                "sudo_brisbane_inner",
+                "sudo_brisbane_city",
                 "sudo_melbourne_city",
                 "sudo_perth_city",
-                "sudo_sydney_inner_city"]
+                "sudo_sydney_city"]
 
     for db_name in db_names:
         if db_name not in couch:
@@ -32,26 +32,53 @@ except couchdb.http.ServerError as e:
     print(f"An error occurred while connecting to CouchDB: {e}")
 
 
-@app.route('/adelaide/<sa2_code>')
-@app.route('/adelaide/<sa2_code>')
-def show_data(sa2_code):
-    for doc_id in databases["sudo_adelaide_city"]:
-        doc = databases["sudo_adelaide_city"].get(doc_id)
+@app.route('/<city>/<sa2_code>')
+def show_data(city,sa2_code):
+    database_name = f"sudo_{city}_city"
+    for doc_id in databases[database_name]:
+        doc = databases[database_name].get(doc_id)
         if doc['sa2_code_2021'] == sa2_code:
-            male_data = {key: value for key, value in doc.items() if
+            male_data_married = {key: value for key, value in doc.items() if
                          key.startswith('m_') and 'marrd_reg_marrge' in key and not key.startswith('m_tot_')}
-            female_data = {key: value for key, value in doc.items() if
+            female_data_married = {key: value for key, value in doc.items() if
                            key.startswith('f_') and 'marrd_reg_marrge' in key and not key.startswith('f_tot_')}
+            male_data_de_facto = {key: value for key, value in doc.items() if
+                         key.startswith('m_') and 'married_de_facto' in key and not key.startswith('m_tot_')}
+            female_data_de_facto = {key: value for key, value in doc.items() if
+                           key.startswith('f_') and 'married_de_facto' in key and not key.startswith('f_tot_')}
+            male_data_not_married = {key: value for key, value in doc.items() if
+                         key.startswith('m_') and 'not_married' in key and not key.startswith('m_tot_')}
+            female_data_not_married = {key: value for key, value in doc.items() if
+                           key.startswith('f_') and 'not_married' in key and not key.startswith('f_tot_')}
+            people_data_married = {key: value for key, value in doc.items() if
+                                   key.startswith('p_') and 'marrd_reg_marrge' in key and not key.startswith('p_tot_')}
+            people_data_de_facto = {key: value for key, value in doc.items() if
+                                    key.startswith('p_') and 'married_de_facto' in key and not key.startswith('p_tot_')}
+            people_data_not_married = {key: value for key, value in doc.items() if
+                                       key.startswith('p_') and 'not_married' in key and not key.startswith('p_tot_')}
             results = {
-                "male": dict(sorted(male_data.items(), key=lambda x: x[0])),
-                "female": dict(sorted(female_data.items(), key=lambda x: x[0]))
+                "male": {
+                    "married": male_data_married,
+                    "de_facto": male_data_de_facto,
+                    "not_married": male_data_not_married,
+                },
+                "female": {
+                    "married": female_data_married,
+                    "de_facto": female_data_de_facto,
+                    "not_married": female_data_not_married,
+                },
+                "people": {
+                    "married": people_data_married,
+                    "de_facto": people_data_de_facto,
+                    "not_married": people_data_not_married,
+                }
+
             }
             break
     else:
         return Response(json.dumps({"error": "SA2 code not found"}), mimetype='application/json'), 404
 
     return Response(json.dumps(results), mimetype='application/json')
-
 
 
 if __name__ == '__main__':
