@@ -53,10 +53,10 @@ with open(file_path, 'r', encoding='utf-8') as f:
                     processed_tweets.add(sentence)
                     count += 1
 
-                    if sentiment_score >= 0.3:
+                    if sentiment_score > 0:
                         sentiment_category = "Positive"
                         positive_count += 1
-                    elif sentiment_score <= -0.3:
+                    elif sentiment_score < 0:
                         sentiment_category = "Negative"
                         negative_count += 1
                     else:
