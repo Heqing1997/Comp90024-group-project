@@ -67,7 +67,7 @@ export default {
 
     async get_data() {
       try {
-        const response = await axios.get('http://127.0.0.1:5000/adelaide/401011001');
+        const response = await axios.get('http://127.0.0.1:5000/brisbane/305011108');
         let jsonData = response.data;
 
 
@@ -173,7 +173,7 @@ export default {
         this.initChart2(this.male_chart_4,this.maleRegisteredTotal,this.maleDefactoTotal,this.maleNotMarriedTotal,'Marital Status of Males')
         this.initChart2(this.female_chart_4,this.femaleRegisteredTotal,this.femaleDefactoTotal,this.femaleNotMarriedTotal,'Marital Status of Females')
 
-        this.initChart3(this.people_chart, this.ageGroups,this.people_marriedArray,this.people_deFactoArray,this.people_notMarriedArray,'Marital Status of Adelaide CBD')
+        this.initChart3(this.people_chart, this.ageGroups,this.people_marriedArray,this.people_deFactoArray,this.people_notMarriedArray,'Marital Status of Kangaroo point')
 
       } catch (error) {
         console.error('Error fetching data:', error);

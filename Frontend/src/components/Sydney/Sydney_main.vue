@@ -1,13 +1,44 @@
 <template>
+   <div class = header>
+      <h3>Sydney Statistics</h3>
+   </div>
+
+   <div class="dropdown-wrapper">
+      <Dropdown/>
+    </div>
+
+   <router-view></router-view>
+
+
 
 </template>
-
 <script>
+import Dropdown from "@/components/Sydney/Dropdown.vue";
+
 export default {
-    name: "Sydney_main"
+    name: "Sydney",
+    components: {Dropdown}
 }
 </script>
 
 <style scoped>
+.header {
 
+  font-size: 30px;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  background-color: #fff;
+
+
+}
+.dropdown-wrapper {
+
+  top: 10px;
+}
 </style>

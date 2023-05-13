@@ -1,6 +1,6 @@
 <template>
    <div class = header>
-      <h3>Adelaide Statistics</h3>
+      <h3>Brisbane Statistics</h3>
    </div>
 
    <div class="dropdown-wrapper">
@@ -14,14 +14,16 @@
 </template>
 
 <script>
-import Dropdown from "@/components/Adelaide/Dropdown.vue";
-import Adelaide_cbd from "@/components/Adelaide/Adelaide_cbd.vue";
-import North_adelaide from "@/components/Adelaide/North_adelaide.vue";
+import Dropdown from "@/components/Brisbane/Dropdown.vue";
+import Highgate_hill from "@/components/Brisbane/Highgate_hill.vue";
+// import Adelaide_cbd from "@/components/Adelaide/Adelaide_cbd.vue";
+// import North_adelaide from "@/components/Adelaide/North_adelaide.vue";
 
 export default {
-    name: "Adelaide_main",
+    name: "Brisbane_main",
     components: {
        Dropdown,
+       // Highgate_hill,
        // Adelaide_cbd,
        // North_adelaide,
     },
