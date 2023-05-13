@@ -1,4 +1,4 @@
-#### extract tweets about marriage
+#### extract tweets about marriage etc.
 import json
 import ijson
 import nltk
@@ -18,24 +18,33 @@ print(synonyms)
 
 
 marital_data = []
+processed_tweets = set()
 count = 0
 
 file_path = "E:\\Desktop\\data\\twitter-huge.json\\mnt\\ext100\\twitter-huge.json"
 
 with open(file_path, 'r', encoding='utf-8') as f:
     parser = ijson.parse(f)
+    is_matching_tweet = False
     for prefix, event, value in parser:
         if prefix.endswith('.tokens') and event == 'string':
             tokens = value
             if any(synonym in value.lower() for synonym in synonyms):
+                is_matching_tweet = True
                 sentence = value.replace('|', ' ')
-                marital_data.append(sentence)
-                count += 1
-                print(sentence)
+                if sentence not in processed_tweets:
+                    marital_data.append(sentence)
+                    processed_tweets.add(sentence)
+                    count += 1
+                    print(sentence)
+            else:
+                is_matching_tweet = False
+        elif is_matching_tweet and prefix.endswith('.tweet.id_str') and event == 'string':
+            processed_tweets.add(value)
 
 print("total count:", count)
 
 json_data = json.dumps(marital_data, indent=2)
 
-with open("marriage_twitters.json", "w") as f:
+with open("marriage_twitters_total.json", "w") as f:
     f.write(json_data)
