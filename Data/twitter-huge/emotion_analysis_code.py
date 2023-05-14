@@ -1,12 +1,10 @@
 #### emotion analysis -- pos/neg/neu
-
-from nltk.sentiment import SentimentIntensityAnalyzer
-#### extract tweets about marriage etc.
 import json
 import ijson
 import gensim.downloader as api
 import nltk
 from nltk.corpus import wordnet
+from nltk.sentiment import SentimentIntensityAnalyzer
 
 # Load pre-trained Word2Vec model
 w2v_model = api.load('fasttext-wiki-news-subwords-300')
@@ -32,7 +30,6 @@ def get_synonyms(words, languages):
                     synonyms.append(lemma.name())
     return synonyms
 
-keywords = ["married", "de facto", "divorced", "separated", "widowed", "never married"]
 languages = nltk.corpus.wordnet.langs()
 synonyms = get_synonyms(similar_words, languages)
 
