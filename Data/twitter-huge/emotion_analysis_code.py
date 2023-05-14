@@ -87,8 +87,7 @@ with open('twitter-huge.json', 'r', encoding='utf-8') as f:
                     }
                     print(tweet_data)
                     results.append(tweet_data)
-                    if count>100:
-                        break;
+                    
             else:
                 is_matching_tweet = False
         elif is_matching_tweet and prefix.endswith('.tweet.id_str') and event == 'string':
