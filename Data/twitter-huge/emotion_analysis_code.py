@@ -82,8 +82,8 @@ with open('twitter-huge.json', 'r', encoding='utf-8') as f:
 
                     tweet_data = {
                         "Tweet": value.replace('|', ' '),
-                        "Sentiment Score": sentiment_score,
-                        "Sentiment Category": sentiment_category
+                        "Sentiment_Score": sentiment_score,
+                        "Sentiment_Category": sentiment_category
                     }
                     print(tweet_data)
                     results.append(tweet_data)
