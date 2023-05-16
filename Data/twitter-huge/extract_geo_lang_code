@@ -1,0 +1,26 @@
+#### extract data with "geo" info and lang=["en", "es", "fr", "id", "pt"], total: 2606293
+import json
+
+file_path = "E:\\Desktop\\data\\twitter-huge.json\\mnt\\ext100\\twitter-huge.json"
+language = ["en", "es", "fr", "id", "pt"]
+
+count = 0
+with open(file_path, 'r', encoding='utf-8') as input_file, open("output_new.json", "w", encoding='utf-8') as output_file:
+    input_file.readline()
+    for line in input_file:
+        geo = '"geo":{}'
+        if geo not in line:
+            twit_location_begin = line.find('[{"full_name"') + 15
+            twit_location_end = line.find('"geo":{"type"') - 2
+            twit_location = line[twit_location_begin:twit_location_end].split(',')[0].lower()
+            lang_start_index = line.find('"lang":') + 8
+            lang_end_index = line.find(',"public_metrics":') - 1
+            lang = line[lang_start_index:lang_end_index]
+            if lang in language:
+                output_line = {
+                    "tweet": line.strip()
+                }
+                count += 1
+                output_file.write(json.dumps(output_line) + "\n")
+                print(count)
+                print(output_line)
