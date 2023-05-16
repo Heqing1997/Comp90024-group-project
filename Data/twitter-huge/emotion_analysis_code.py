@@ -1,42 +1,22 @@
-#### emotion analysis -- pos/neg/neu
 import json
 import ijson
 import gensim.downloader as api
-import nltk
-from nltk.corpus import wordnet
 from nltk.sentiment import SentimentIntensityAnalyzer
 
 # Load pre-trained Word2Vec model
 w2v_model = api.load('fasttext-wiki-news-subwords-300')
 
 # Define keywords
-keywords = ["married", "defacto", "divorced", "separated", "widowed", "unmarried"]
+keywords = ["marriage"]
 
 # Get similar words to each keyword and concatenate them
 similar_words = []
 for keyword in keywords:
-    similar_words += [word[0] for word in w2v_model.most_similar(keyword)]
+    similar_words += [word[0] for word in w2v_model.most_similar(keyword, topn=100) if word[1] > 0.7]
 
-# Remove duplicates and print the resulting list
+# Remove duplicates
 similar_words = list(set(similar_words))
-
-def get_synonyms(words, languages):
-    synonyms = []
-    for word in words:
-        for language in languages:
-            synsets = wordnet.synsets(word, lang=language)
-            for syn in synsets:
-                for lemma in syn.lemmas(lang=language):
-                    synonyms.append(lemma.name())
-    return synonyms
-
-languages = nltk.corpus.wordnet.langs()
-synonyms = get_synonyms(similar_words, languages)
-
-# Remove duplicates and print the resulting list
-synonyms = list(set(synonyms))
-synonyms += list(set(similar_words) - set(synonyms))
-print(synonyms)
+print(similar_words)
 
 def analyze_sentiment(text):
     sia = SentimentIntensityAnalyzer()
@@ -57,19 +37,20 @@ with open('twitter-huge.json', 'r', encoding='utf-8') as f:
     is_matching_tweet = False
     for prefix, event, value in parser:
         if prefix.endswith('.tokens') and event == 'string':
-            tokens = value
-            if any(synonym in value.lower() for synonym in synonyms):
+            tokens = value.split()  # Split the tokens into individual words
+            if any(any(synonym in token.lower() for token in tokens) for synonym in similar_words):
                 is_matching_tweet = True
                 sentence = value.replace('|', ' ')
                 if sentence not in processed_tweets:
                     sentiment_score = analyze_sentiment(sentence)
                     marital_data.append({
-                        'sentence': sentence,
+                        'tokens': tokens,  # Record the entire token list
                         'sentiment_score': sentiment_score
                     })
                     processed_tweets.add(sentence)
                     count += 1
-
+                    if count > 100:
+                        break
                     if sentiment_score > 0:
                         sentiment_category = "Positive"
                         positive_count += 1
@@ -81,7 +62,7 @@ with open('twitter-huge.json', 'r', encoding='utf-8') as f:
                         neutral_count += 1
 
                     tweet_data = {
-                        "Tweet": value.replace('|', ' '),
+                        "Tweet": sentence,  # Use the entire sentence instead of value
                         "Sentiment_Score": sentiment_score,
                         "Sentiment_Category": sentiment_category
                     }
