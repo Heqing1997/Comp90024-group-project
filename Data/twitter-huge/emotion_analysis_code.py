@@ -76,9 +76,9 @@ with open('twitter-huge.json', 'r', encoding='utf-8') as f:
 
 # 添加统计结果
 results.append({
-    "Positive Count": positive_count,
-    "Negative Count": negative_count,
-    "Neutral Count": neutral_count
+    "Positive_Count": positive_count,
+    "Negative_Count": negative_count,
+    "Neutral_Count": neutral_count
 })
 
 json_data = json.dumps(results, indent=4)
