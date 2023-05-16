@@ -1,0 +1,93 @@
+import json
+import ijson
+from nltk.sentiment import SentimentIntensityAnalyzer
+
+similar_words = ['mariage', 'berkahwin', 'menjalankan', 'marriage_ceremony', 'inter-marriage', 'conjugal', 'perkawinan', 'menjelang', 'remarriages', 'marriage-', 'meninggal', 'menemukan', 'mengakibatkan', 'marriage', 'wedding', 'casada', 'reposado', 'marriage-minded', 'homme', 'marriage-equality', 'casar', 'marrage', 'non-marriage', 'lanzado', 'marriages', 'marriage-related', 'post-marriage', 'pengantin', 'kesatuan', 'mengajar', 'gabungan', 'casados', 'interesado', 'tahan', 'spousal_relationship', 'marrige', 'mengajak', 'marrriage', 'mariages', 'perniagaan', 'marito', 'pensado', 'sponsali', 'patrimonio', 'cónyugues', 'lançado', 'noces', 'pesta_kahwin', 'pre-marriage', 'basado', 'sposalizio', 'matrimony', 'menjalani', 'perkahwinan', 'compañero', 'asado', 'unión', 'same-sex-marriage', 'Matrimonio', 'wedlock', 'berkomunikasi', 'imeneo', 'divorce', 'pasado', 'connubio', 'permasalahan', 'perjodohan', 'man_and_wife', 'pergabungan', 'rosado', 'époux', 'married_couple', 'marriage-based', 'demonio', 'bertahan', 'remarriage', 'union', 'matrimonio', 'marraige', 're-marriage', 'perubahan', 'pernikahan', 'marriageability', 'nikah', 'Mariage', 'matrimonii', 'pesado', 'berlebihan', 'gay-marriage', 'marriage-like', 'mengadakan', 'nozze', 'menikmati', 'pareja', 'noce', 'unione_matrimoniale', 'casado', 'marriage.', 'pesta_nikah', 'perna', 'pertumbuhan']
+def analyze_sentiment(text):
+    sia = SentimentIntensityAnalyzer()
+    sentiment_scores = sia.polarity_scores(text)
+    compound_score = sentiment_scores['compound']
+    return compound_score
+
+
+marital_data = []
+results = []
+processed_tweets = set()
+count = 0
+positive_count = 0
+negative_count = 0
+neutral_count = 0
+
+with open('twitter-huge.json', 'r', encoding='utf-8') as f:
+    parser = ijson.parse(f)
+    is_matching_tweet = False
+    tweet_data = {}  # Store current tweet data
+    for prefix, event, value in parser:
+        if prefix.endswith('.tokens') and event == 'string':
+            tokens = value.split()  # Split the tokens into individual words
+            if any(any(synonym in token.lower() for token in tokens) for synonym in similar_words):
+                is_matching_tweet = True
+                sentence = value.replace('|', ' ')
+                if sentence not in processed_tweets:
+                    sentiment_score = analyze_sentiment(sentence)
+                    marital_data.append({
+                        'tokens': tokens,  # Record the entire token list
+                        'sentiment_score': sentiment_score
+                    })
+                    processed_tweets.add(sentence)
+                    count += 1
+                    if count>200:
+                        break;
+
+                    if sentiment_score > 0:
+                        sentiment_category = "Positive"
+                        positive_count += 1
+                    elif sentiment_score < 0:
+                        sentiment_category = "Negative"
+                        negative_count += 1
+                    else:
+                        sentiment_category = "Neutral"
+                        neutral_count += 1
+
+                    tweet_data = {
+                        "Tweet": sentence,  # Use the entire sentence instead of value
+                        "SentimentScore": sentiment_score,
+                        "SentimentCategory": sentiment_category
+                    }
+                    results.append(tweet_data)
+                    
+            else:
+                is_matching_tweet = False
+        # ...
+
+        elif is_matching_tweet and prefix.endswith('.includes.places.item.full_name') and event == 'string':
+            full_name = value
+            if 'place' not in tweet_data:
+                tweet_data['place']= {}
+            tweet_data['place']['full_name'] = full_name
+        elif is_matching_tweet and prefix.endswith('.includes.places.item.geo.item.bbox') and event == '[]':
+            bbox = value 
+            tweet_data['place']['bbox'] = bbox
+        elif is_matching_tweet and prefix.endswith('.lang') and event == 'string':
+            tweet_data['lang'] = value
+            if 'place' not in tweet_data:
+                tweet_data['place'] = {}
+            if tweet_data:
+                results.append(tweet_data)
+
+
+# 添加统计结果
+results.append({
+    "Positive_Count": positive_count,
+    "Negative_Count": negative_count,
+    "Neutral_Count": neutral_count
+})
+
+json_data = json.dumps(results, indent=4)
+
+# 将结果保存为JSON文件
+
+output_file = "emotion_analysis.json"
+with open(output_file, 'w') as f:
+   f.write(json_data)
+
