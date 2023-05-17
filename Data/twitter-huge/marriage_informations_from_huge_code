@@ -1,8 +1,35 @@
-import json
-import ijson
-from nltk.sentiment import SentimentIntensityAnalyzer
 
-similar_words = ['mariage', 'berkahwin', 'menjalankan', 'marriage_ceremony', 'inter-marriage', 'conjugal', 'perkawinan', 'menjelang', 'remarriages', 'marriage-', 'meninggal', 'menemukan', 'mengakibatkan', 'marriage', 'wedding', 'casada', 'reposado', 'marriage-minded', 'homme', 'marriage-equality', 'casar', 'marrage', 'non-marriage', 'lanzado', 'marriages', 'marriage-related', 'post-marriage', 'pengantin', 'kesatuan', 'mengajar', 'gabungan', 'casados', 'interesado', 'tahan', 'spousal_relationship', 'marrige', 'mengajak', 'marrriage', 'mariages', 'perniagaan', 'marito', 'pensado', 'sponsali', 'patrimonio', 'cónyugues', 'lançado', 'noces', 'pesta_kahwin', 'pre-marriage', 'basado', 'sposalizio', 'matrimony', 'menjalani', 'perkahwinan', 'compañero', 'asado', 'unión', 'same-sex-marriage', 'Matrimonio', 'wedlock', 'berkomunikasi', 'imeneo', 'divorce', 'pasado', 'connubio', 'permasalahan', 'perjodohan', 'man_and_wife', 'pergabungan', 'rosado', 'époux', 'married_couple', 'marriage-based', 'demonio', 'bertahan', 'remarriage', 'union', 'matrimonio', 'marraige', 're-marriage', 'perubahan', 'pernikahan', 'marriageability', 'nikah', 'Mariage', 'matrimonii', 'pesado', 'berlebihan', 'gay-marriage', 'marriage-like', 'mengadakan', 'nozze', 'menikmati', 'pareja', 'noce', 'unione_matrimoniale', 'casado', 'marriage.', 'pesta_nikah', 'perna', 'pertumbuhan']
+import json
+import gensim.downloader as api
+from nltk.sentiment import SentimentIntensityAnalyzer
+import ijson
+from nltk.corpus import wordnet
+
+# Load pre-trained Word2Vec model
+w2v_model = api.load('fasttext-wiki-news-subwords-300')
+
+# Define keywords
+keywords = ["marriage", "mariage", "matrimonio","pernikahan","casado"]
+
+# Get similar words to each keyword and concatenate them
+similar_words = []
+for keyword in keywords:
+    similar_words += [word[0] for word in w2v_model.most_similar(keyword, topn=100) if word[1] > 0.7]
+
+    # Get synonyms from WordNet in all available languages
+    languages = wordnet.langs()
+    synonyms = []
+    for lang in languages:
+        synsets = wordnet.synsets(keyword, lang=lang)
+        for syn in synsets:
+            for lemma in syn.lemmas(lang=lang):
+                synonyms.append(lemma.name())
+    similar_words += synonyms
+
+# Remove duplicates
+similar_words = list(set(similar_words))
+print(similar_words)
+
 def analyze_sentiment(text):
     sia = SentimentIntensityAnalyzer()
     sentiment_scores = sia.polarity_scores(text)
@@ -36,8 +63,7 @@ with open('twitter-huge.json', 'r', encoding='utf-8') as f:
                     })
                     processed_tweets.add(sentence)
                     count += 1
-                    if count>200:
-                        break;
+                    print(count)
 
                     if sentiment_score > 0:
                         sentiment_category = "Positive"
@@ -54,7 +80,6 @@ with open('twitter-huge.json', 'r', encoding='utf-8') as f:
                         "SentimentScore": sentiment_score,
                         "SentimentCategory": sentiment_category
                     }
-                    results.append(tweet_data)
                     
             else:
                 is_matching_tweet = False
@@ -64,10 +89,7 @@ with open('twitter-huge.json', 'r', encoding='utf-8') as f:
             full_name = value
             if 'place' not in tweet_data:
                 tweet_data['place']= {}
-            tweet_data['place']['full_name'] = full_name
-        elif is_matching_tweet and prefix.endswith('.includes.places.item.geo.item.bbox') and event == '[]':
-            bbox = value 
-            tweet_data['place']['bbox'] = bbox
+            tweet_data['place'] = full_name
         elif is_matching_tweet and prefix.endswith('.lang') and event == 'string':
             tweet_data['lang'] = value
             if 'place' not in tweet_data:
@@ -90,4 +112,3 @@ json_data = json.dumps(results, indent=4)
 output_file = "emotion_analysis.json"
 with open(output_file, 'w') as f:
    f.write(json_data)
-
