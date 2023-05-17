@@ -2,6 +2,10 @@ from flask import Flask, Response
 from flask_cors import CORS
 import couchdb
 import json
+from collections import defaultdict
+from mastodon import Mastodon, StreamListener
+import threading
+from harvester import run_harvester
 
 app = Flask(__name__)
 CORS(app)
@@ -18,7 +22,8 @@ try:
                 "sudo_brisbane_city",
                 "sudo_melbourne_city",
                 "sudo_perth_city",
-                "sudo_sydney_city"]
+                "sudo_sydney_city",
+     "mastodon_au"]
 
     for db_name in db_names:
         if db_name not in couch:
@@ -31,25 +36,51 @@ try:
 except couchdb.http.ServerError as e:
     print(f"An error occurred while connecting to CouchDB: {e}")
 
+token = 'JsVc4APP3DMFnOPBzQU-eriGlgG00A9crz_OBpnlyhk'
+token_2 = '7rflPh_nxRZBIN_ZF8Nh2j9EihC2EgJUBX6dHgornL4'
+harvester_thread = threading.Thread(target=run_harvester, args=("mastodon_au", token, f'https://aus.social/'))
+harvester_thread_2 = threading.Thread(target=run_harvester, args=("mastodon_au_blower", token_2, f'https://theblower.au/'))
+harvester_thread.start()
+harvester_thread_2.start()
+
+
+# m = Mastodon(
+#     api_base_url=f'https://aus.social/',
+#     access_token=token
+# )
+#
+#
+# class Listener(StreamListener):
+#     def on_update(self, status):
+#         json_str = json.dumps(status, indent=2, sort_keys=True, default=str)
+#         doc_id, doc_rev = databases["mastodon_au"].save(json.loads(json_str))
+#         print(f'Document saved with ID: {doc_id} and revision: {doc_rev}')
+#
+#
+# m.stream_public(Listener())
+
 
 @app.route('/<city>/<sa2_code>')
-def show_data(city,sa2_code):
+def show_data(city, sa2_code):
     database_name = f"sudo_{city}_city"
     for doc_id in databases[database_name]:
+
+        if doc_id.startswith('_design/'):
+            continue
         doc = databases[database_name].get(doc_id)
         if doc['sa2_code_2021'] == sa2_code:
             male_data_married = {key: value for key, value in doc.items() if
-                         key.startswith('m_') and 'marrd_reg_marrge' in key and not key.startswith('m_tot_')}
+                                 key.startswith('m_') and 'marrd_reg_marrge' in key and not key.startswith('m_tot_')}
             female_data_married = {key: value for key, value in doc.items() if
-                           key.startswith('f_') and 'marrd_reg_marrge' in key and not key.startswith('f_tot_')}
+                                   key.startswith('f_') and 'marrd_reg_marrge' in key and not key.startswith('f_tot_')}
             male_data_de_facto = {key: value for key, value in doc.items() if
-                         key.startswith('m_') and 'married_de_facto' in key and not key.startswith('m_tot_')}
+                                  key.startswith('m_') and 'married_de_facto' in key and not key.startswith('m_tot_')}
             female_data_de_facto = {key: value for key, value in doc.items() if
-                           key.startswith('f_') and 'married_de_facto' in key and not key.startswith('f_tot_')}
+                                    key.startswith('f_') and 'married_de_facto' in key and not key.startswith('f_tot_')}
             male_data_not_married = {key: value for key, value in doc.items() if
-                         key.startswith('m_') and 'not_married' in key and not key.startswith('m_tot_')}
+                                     key.startswith('m_') and 'not_married' in key and not key.startswith('m_tot_')}
             female_data_not_married = {key: value for key, value in doc.items() if
-                           key.startswith('f_') and 'not_married' in key and not key.startswith('f_tot_')}
+                                       key.startswith('f_') and 'not_married' in key and not key.startswith('f_tot_')}
             people_data_married = {key: value for key, value in doc.items() if
                                    key.startswith('p_') and 'marrd_reg_marrge' in key and not key.startswith('p_tot_')}
             people_data_de_facto = {key: value for key, value in doc.items() if
@@ -81,5 +112,22 @@ def show_data(city,sa2_code):
     return Response(json.dumps(results), mimetype='application/json')
 
 
+@app.route('/<city>/')
+def show_city_data(city):
+    database_name = f"sudo_{city}_city"
+    db = databases[database_name]
+    view_result = db.view(f'_design/people/_view/{city}')
+
+    # print(view_result)
+    merged_data = defaultdict(int)
+    for row in view_result:
+        key = row.key
+        value = row.value
+        merged_data[key] += value
+
+    return Response(json.dumps(dict(merged_data)), mimetype='application/json')
+
+
 if __name__ == '__main__':
+
     app.run(debug=True)
