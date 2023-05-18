@@ -323,6 +323,7 @@ export default {
 
 
   mounted() {
+       this.$emit("hideData");
 
     // console.log(this.$refs.male_registered_chart)
     this.male_chart = echarts.init(this.$refs.male_registered_chart);

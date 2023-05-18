@@ -1,6 +1,6 @@
 
 <template>
-  <div>
+  <div class="center">
     <h1>Welcome to our website</h1>
     <p>Please select the city in the navigation bar</p>
   </div>
@@ -20,5 +20,12 @@ h1 {
 p {
   font-size: 1.5rem;
   margin-bottom: 2rem;
+}
+.center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 </style>

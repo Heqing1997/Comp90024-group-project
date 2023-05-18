@@ -153,7 +153,7 @@ export default {
           this.people_notMarriedArray.push(jsonData.people.not_married[`${ageKey}_not_married`]);
       }
 
-         console.log(this.people_notMarriedArray);
+         // console.log(this.people_notMarriedArray);
 
 
         this.maleRegisteredTotal = this.sa2_male_registered.reduce((acc, cur) => acc + cur, 0);
@@ -323,6 +323,7 @@ export default {
 
 
   mounted() {
+    this.$emit("hideData");
 
     // console.log(this.$refs.male_registered_chart)
     this.male_chart = echarts.init(this.$refs.male_registered_chart);
@@ -338,6 +339,13 @@ export default {
     this.get_data();
 
   },
+
+   unmounted() {
+    this.$emit("showData");
+
+  },
+
+
 };
 </script>
 

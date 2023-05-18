@@ -33,6 +33,8 @@ import Darlinghurst from "@/components/Sydney/Darlinghurst.vue";
 import Kensington_sydney from "@/components/Sydney/Kensington_sydney.vue";
 import Potts_point from "@/components/Sydney/Potts_point.vue";
 import Surry_hills from "@/components/Sydney/Surry_hills.vue";
+import Twitter_analysis from "@/components/Twitter_analysis.vue";
+import Mastodon_analysis from "@/components/Mastodon_analysis.vue";
 
 
 const routes  = [
@@ -41,7 +43,7 @@ const routes  = [
     path: "/adelaide",
     component: Adelaide_main,
     children: [
-      { path: "401011001", component: Adelaide_cbd },
+      { path: "401011001", component: Adelaide_cbd, },
       { path: "401011002", component: North_adelaide },
     ],
   },
@@ -97,6 +99,10 @@ const routes  = [
       { path: "117031336", component: Surry_hills },
     ],
   },
+
+  { path: "/twitters", component: Twitter_analysis},
+  { path: "/mastodon", component: Mastodon_analysis}
+
 ]
 
 const router = createRouter({

@@ -22,6 +22,12 @@
     <el-menu-item index="5">
       <router-link to="/sydney">Sydney</router-link>
     </el-menu-item>
+    <el-menu-item index="6">
+      <router-link to="/twitters">Twitter Analysis</router-link>
+    </el-menu-item>
+    <el-menu-item index="7">
+      <router-link to="/mastodon">Mastodon Analysis</router-link>
+    </el-menu-item>
 
   </el-menu>
 </template>
