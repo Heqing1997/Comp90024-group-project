@@ -6,6 +6,9 @@ from collections import defaultdict
 from mastodon import Mastodon, StreamListener
 import threading
 from harvester import run_harvester
+from filter_havester import filter_doc
+from filter_havester import sentiment_analysis
+from flask import jsonify
 
 app = Flask(__name__)
 CORS(app)
@@ -23,7 +26,9 @@ try:
                 "sudo_melbourne_city",
                 "sudo_perth_city",
                 "sudo_sydney_city",
-     "mastodon_au"]
+                "mastodon_au",
+                "twitters_marriage_informations",
+                "mastodon_au_filtered"]
 
     for db_name in db_names:
         if db_name not in couch:
@@ -37,11 +42,15 @@ except couchdb.http.ServerError as e:
     print(f"An error occurred while connecting to CouchDB: {e}")
 
 token = 'JsVc4APP3DMFnOPBzQU-eriGlgG00A9crz_OBpnlyhk'
-token_2 = '7rflPh_nxRZBIN_ZF8Nh2j9EihC2EgJUBX6dHgornL4'
+# token_2 = '7rflPh_nxRZBIN_ZF8Nh2j9EihC2EgJUBX6dHgornL4'
 harvester_thread = threading.Thread(target=run_harvester, args=("mastodon_au", token, f'https://aus.social/'))
-harvester_thread_2 = threading.Thread(target=run_harvester, args=("mastodon_au_blower", token_2, f'https://theblower.au/'))
+filter_thread = threading.Thread(target=sentiment_analysis)
+
+# harvester_thread_2 = threading.Thread(target=run_harvester,
+#                                       args=("mastodon_au_blower", token_2, f'https://theblower.au/'))
 harvester_thread.start()
-harvester_thread_2.start()
+# harvester_thread_2.start()
+filter_thread.start()
 
 
 # m = Mastodon(
@@ -128,6 +137,38 @@ def show_city_data(city):
     return Response(json.dumps(dict(merged_data)), mimetype='application/json')
 
 
-if __name__ == '__main__':
+@app.route('/twitter_analysis/')
+def show_twitter_data():
+    db = databases["twitters_marriage_informations"]
+    view_result = db.view("_design/city/_view/city_count", group_level=2)
 
+    cities = ['Melbourne', 'Sydney', 'Brisbane', 'Adelaide', 'Perth']
+    result = {city: {'Positive': 0, 'Neutral': 0, 'Negative': 0} for city in cities}
+    result['Other_places'] = {'Positive': 0, 'Neutral': 0, 'Negative': 0}
+
+    for row in view_result:
+        place = row.key[0]
+        sentiment = row.key[1]
+        count = row.value
+        found = False
+        for city in cities:
+            if city in place:
+                result[city][sentiment] += count
+                found = True
+                break
+        if not found:
+            result['Other_places'][sentiment] += count
+
+    return result
+
+
+@app.route('/mastodon_analysis/')
+def show_mastodon_data():
+    db = databases["mastodon_au_filtered"]
+    view_result = db.view("_design/sentiment/_view/sentiment_category", group_level=1)
+    data = {row.key: row.value for row in view_result}
+    return jsonify(data)
+
+
+if __name__ == '__main__':
     app.run(debug=True)

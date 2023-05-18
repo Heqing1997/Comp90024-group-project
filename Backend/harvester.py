@@ -35,3 +35,5 @@ def run_harvester(database_name, api_token, server_url):
             print(f'Document saved with ID: {doc_id} and revision: {doc_rev}')
 
     m.stream_public(Listener())
+
+
