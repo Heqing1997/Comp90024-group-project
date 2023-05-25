@@ -3,11 +3,6 @@ from flask_cors import CORS
 import couchdb
 import json
 from collections import defaultdict
-from mastodon import Mastodon, StreamListener
-import threading
-from harvester import run_harvester
-from filter_havester import filter_doc
-from filter_havester import sentiment_analysis
 from flask import jsonify
 
 app = Flask(__name__)
@@ -41,16 +36,17 @@ try:
 except couchdb.http.ServerError as e:
     print(f"An error occurred while connecting to CouchDB: {e}")
 
-token = 'JsVc4APP3DMFnOPBzQU-eriGlgG00A9crz_OBpnlyhk'
-# token_2 = '7rflPh_nxRZBIN_ZF8Nh2j9EihC2EgJUBX6dHgornL4'
-harvester_thread = threading.Thread(target=run_harvester, args=("mastodon_au", token, f'https://aus.social/'))
-filter_thread = threading.Thread(target=sentiment_analysis)
 
-# harvester_thread_2 = threading.Thread(target=run_harvester,
-#                                       args=("mastodon_au_blower", token_2, f'https://theblower.au/'))
-harvester_thread.start()
-# harvester_thread_2.start()
-filter_thread.start()
+# token = 'JsVc4APP3DMFnOPBzQU-eriGlgG00A9crz_OBpnlyhk'
+# # token_2 = '7rflPh_nxRZBIN_ZF8Nh2j9EihC2EgJUBX6dHgornL4'
+# harvester_thread = threading.Thread(target=run_harvester, args=("mastodon_au", token, f'https://aus.social/'))
+# filter_thread = threading.Thread(target=sentiment_analysis)
+#
+# # harvester_thread_2 = threading.Thread(target=run_harvester,
+# #                                       args=("mastodon_au_blower", token_2, f'https://theblower.au/'))
+# # harvester_thread.start()
+# # harvester_thread_2.start()
+# # filter_thread.start()
 
 
 # m = Mastodon(
@@ -171,4 +167,4 @@ def show_mastodon_data():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=8080)
