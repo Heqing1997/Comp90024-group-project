@@ -1,0 +1,47 @@
+import couchdb
+
+# CouchDB server URL
+server_url = 'http://admin:password@172.26.135.144:5984/'
+
+# Database name
+db_name = 'twitters_marriage_informations'
+
+# Connect to CouchDB server
+server = couchdb.Server(server_url)
+
+# Access or create the database
+db = server[db_name]
+
+# Define the map function for the view
+map_func = '''function(doc) {
+    if (doc.lang) {
+        emit(doc.lang, 1);
+    }
+}'''
+
+# Define the reduce function for the view
+reduce_func = '_sum'
+
+# Create the design document
+design_doc = {
+    "_id": "_design/my_views",
+    "views": {
+        "count_lang": {
+            "map": map_func,
+            "reduce": reduce_func
+        }
+    }
+}
+
+# Save the design document to the database
+db.save(design_doc)
+
+# Query the view to get the counts for each language
+results = db.view('my_views/count_lang', group=True)
+
+# Print the counts for each language
+for row in results:
+    language = row.key
+    count = row.value
+    print(f"Language: {language}, Count: {count}")
+    
