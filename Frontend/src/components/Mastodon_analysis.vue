@@ -22,7 +22,7 @@ export default {
     methods:{
       async get_data() {
         try {
-          const response = await axios.get('http://127.0.0.1:5000/mastodon_analysis');
+          const response = await axios.get('http://172.26.135.144:8080/mastodon_analysis');
           let jsonData = response.data;
 
           this.mastodon_data=[jsonData.Positive,jsonData.Neutral,jsonData.Negative]

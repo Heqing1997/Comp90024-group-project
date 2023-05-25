@@ -85,7 +85,7 @@ export default {
 
        async getData() {
          try {
-           const response = await axios.get('http://127.0.0.1:5000/brisbane');
+           const response = await axios.get('http://172.26.135.144:8080/brisbane');
            let brisbaneData = response.data;
 
          this.RegisteredTotal=brisbaneData.p_tot_marrd_reg_marrge

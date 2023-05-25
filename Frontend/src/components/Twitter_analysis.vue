@@ -33,7 +33,7 @@ export default{
     methods:{
       async get_data() {
         try {
-          const response = await axios.get('http://127.0.0.1:5000/twitter_analysis');
+          const response = await axios.get('http://172.26.135.144:8080/twitter_analysis');
           let jsonData = response.data;
 
           this.adelaide_twitter_data = [

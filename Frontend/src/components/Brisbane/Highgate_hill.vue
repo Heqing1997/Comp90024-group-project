@@ -67,7 +67,7 @@ export default {
 
     async get_data() {
       try {
-        const response = await axios.get('http://127.0.0.1:5000/brisbane/305011107');
+        const response = await axios.get('http://172.26.135.144:8080/brisbane/305011107');
         let jsonData = response.data;
 
 
