@@ -1,0 +1,31 @@
+- name: install python with Mastodon and CouchDB
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: install Python3
+      apt:
+        name: python3
+        state: latest
+
+    - name: install pip
+      apt:
+        name: python3-pip
+        state: latest
+
+    - name: install screen
+      apt:
+        name: screen
+        state: latest
+
+    - name: install Mastodon and CouchDB, and nltk
+      pip:
+        name: "Mastodon.py, couchdb, nltk"
+        state: latest
+
+    - name: run mastodon_harvester.py
+      ansible.builtin.command:
+        cmd: "screen -dm python3 mastodon_harvester.py"
+
+    - name: run sentiment_analysis.py
+      ansible.builtin.command:
+        cmd: "screen -dm python3 harvester_filter.py"
